@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 export const mentalHealthAssessmentSchema = z.object({
-  date: z.date(),
-  mood: z.enum(['happy', 'sad', 'angry', 'neutral']),
-  anxietyLevel: z.number().min(0).max(10),
-  stressLevel: z.number().min(0).max(10),
-  socialInteraction: z.enum(['very social', 'neutral', 'withdrawn']),
-  sleepQuality: z.enum(['very good', 'good', 'average', 'poor']),
-  appetiteChanges: z.enum(['no change', 'decreased', 'increased']),
-  isFeelingSafe: z.boolean(),
+  date: z.string().transform((str) => new Date(str)),
+  mood: z.enum(['happy', 'sad', 'angry', 'neutral']).optional(),
+  anxietyLevel: z.number().min(0).max(10).optional(),
+  stressLevel: z.number().min(0).max(10).optional(),
+  socialInteraction: z.enum(['very social', 'neutral', 'withdrawn']).optional(),
+  sleepQuality: z.enum(['very good', 'good', 'average', 'poor']).optional(),
+  appetiteChanges: z.enum(['no change', 'decreased', 'increased']).optional(),
+  isFeelingSafe: z.boolean().optional(),
   additionalNotes: z.string().optional(),
 });
 

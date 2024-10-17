@@ -12,6 +12,7 @@ import { signupSchema } from "@/schemas/userSchema";
 import axios, { AxiosError } from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import {
+  
   Form,
   FormControl,
   FormField,
@@ -28,8 +29,9 @@ const Page = () => {
   const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const debouncedUsername = useDebounceCallback(setUsername, 500);
+  // console.log(isSubmitting);
+  
+  const debouncedUsername = useDebounceCallback(setUsername, 1500);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -40,7 +42,7 @@ const Page = () => {
       email: "",
       password: "",
       gender: "",
-      age: "",
+      age: null,
     },
   });
 
@@ -72,13 +74,17 @@ const Page = () => {
   const onSubmit = async (data: z.infer<typeof signupSchema>) => {
     setIsSubmitting(true);
 
+    // console.log(data);
     try {
       const response = await axios.post("/api/sign-up", data);
       toast({
         title: "Success",
         description: response.data.message,
       });
-
+      setTimeout(() => {
+      router.push("/");
+        
+      }, 1500);
       setIsSubmitting(false);
     } catch (error) {
       console.error("Error signing up", error);
@@ -104,7 +110,8 @@ const Page = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
             <FormField
               name="username"
               control={form.control}
@@ -175,7 +182,7 @@ const Page = () => {
                   <FormControl>
                     <select
                       {...field}
-                      className="w-full p-2 border border-gray-300 rounded"
+                      className="w-full p-2 border bg-gray-800 rounded"
                     >
                       <option value="">Select Gender</option>
                       <option value="male">Male</option>
@@ -199,13 +206,40 @@ const Page = () => {
                       {...field}
                       type="number"
                       placeholder="Enter your age"
-                      className="w-full p-2 border border-gray-300 rounded"
+                      className="w-full p-2 border bg-gray-800 border-gray-300 rounded"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value ? Number(value) : null);  
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+<FormField
+  name="role"
+  control={form.control}
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Role</FormLabel>
+      <FormControl>
+        <select
+          {...field}
+          className="w-full p-2 border bg-gray-800 rounded"
+        >
+          <option value="">Select Role</option>
+          <option value="parent">Parent</option>
+          <option value="educator">Educator</option>
+          <option value="child">Child</option>
+        </select>
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
 
             <Button
               type="submit"

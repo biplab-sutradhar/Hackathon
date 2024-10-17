@@ -43,7 +43,7 @@ export const signupSchema = z.object({
 
   role: z.enum(['parent', 'educator', 'child'], {
     message: "Role must be either 'parent', 'educator', or 'child'",
-  }),
+  }).optional(),
 
-  isVerified: z.boolean().default(false),
+  isVerified: z.boolean().optional(),
 });

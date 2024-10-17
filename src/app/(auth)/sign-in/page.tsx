@@ -1,5 +1,4 @@
 "use client";
-import { Resolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import * as z from "zod";
@@ -18,7 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { signinSchema } from "@/schemas/signInSchema";
+import { signinSchema } from "@/schemas/userSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const Page = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,16 +35,15 @@ const Page = () => {
 
   const onSubmit = async (data: z.infer<typeof signinSchema>) => {
     setIsSubmitting(true);
-    
+
     const result = await signIn("credentials", {
       redirect: false,
       identifier: data.identifier,
       password: data.password,
     });
-    
+
     console.error("Error during sign-in:", result?.error);
 
-    
     setIsSubmitting(false);
 
     if (result?.error) {
@@ -67,7 +66,7 @@ const Page = () => {
         variant: "destructive",
       });
     } else if (result?.url) {
-      router.replace('/dashboard');
+      router.replace('/');
     }
   };
 
@@ -78,7 +77,7 @@ const Page = () => {
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
             Join  
           </h1>
-          <p className="mb-4">Sign up </p>
+          <p className="mb-4">Sign In </p>
         </div>
 
         <Form {...form}>
@@ -93,9 +92,6 @@ const Page = () => {
                     <Input {...field} placeholder="email or username" />
                   </FormControl>
                   <FormMessage />
-                  <p className="text-muted text-gray-400 text-sm">
-                    We will send you a verification code
-                  </p>
                 </FormItem>
               )}
             />
@@ -127,7 +123,9 @@ const Page = () => {
           </form>
         </Form>
 
-       
+        <Button className="w-full">
+          <Link href="/sign-up">Don't have an account? Sign Up</Link>
+        </Button>
       </div>
     </div>
   );

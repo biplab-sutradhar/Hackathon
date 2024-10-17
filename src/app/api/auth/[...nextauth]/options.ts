@@ -1,8 +1,8 @@
 import { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import brypt from 'bcryptjs';
+import CredentialsProvider from 'next-auth/providers/credentials'; 
 import UserModel from '@/model/User';
 import dbConnect from '@/libs/dbConnects';
+import bcrypt from 'bcryptjs';  
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -27,11 +27,8 @@ export const authOptions: NextAuthOptions = {
             throw new Error('User not found with this email');
           }
 
-          if (!user.isVerified) {
-            throw new Error('Please verify your account before login');
-          }
-
-          const isPasswordCorrect = await brypt.compare(
+         
+          const isPasswordCorrect = await bcrypt.compare(
             credentials.password,
             user.password
           );
