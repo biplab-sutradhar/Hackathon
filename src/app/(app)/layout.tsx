@@ -1,8 +1,9 @@
-'use client' 
-import { Inter } from "next/font/google"; 
-import AuthProvider from "@/context/AuthProvier"; 
-import React, { useState } from "react"; 
+'use client'
+import { Inter } from "next/font/google";
+import AuthProvider from "@/context/AuthProvier";
+import React, { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
+import { ToastProvider } from "@/components/ui/toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,8 +13,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isClosed, setIsClosed] = useState(false);
-  console.log(setIsClosed);
+  // const [isClosed, setIsClosed] = useState(false);
 
   return (
     <html lang="en">
@@ -21,10 +21,12 @@ export default function RootLayout({
         <AuthProvider>
           {/* <Navbar /> */}
           {/* <Sidebar setIsClosed={setIsClosed} /> */}
-          <div className={`${isClosed ? "ml-[224px]" : "ml-[80px]"}`}>
+          {/* <div className={`${isClosed ? "ml-[224px]" : "ml-[80px]"}`}> */}
             {children}
-          </div>
-          <Toaster />
+          {/* </div> */}
+          <ToastProvider>
+            <Toaster />
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
