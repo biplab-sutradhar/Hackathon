@@ -54,10 +54,8 @@ export default function EmotionTracker () {
   // Function to handle post request whenever mood, anxiety, or stress changes
   const postMentalHealthData = async (updatedData) => {
     try {
-      const response = await fetch('/api/mental-health-tracking', {
-        method: 'POST',
+      const response = await axios.post('/api/post', updatedData, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData),
       });
 
       if (!response.ok) {

@@ -1,46 +1,194 @@
-'use client'
-import { useState } from 'react';
-import HabitTable from '../(components)/habitTable';
-import TrackerForm from '../(components)/trackerForm';
+"use client";
 
+import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useForm } from "react-hook-form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";  
+import { useToast } from "@/hooks/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import axios from "axios";
 
-interface Habit {
-  mealType: string,
+// Define the schema for eating habits
+const eatingHabitSchema = z.object({
+  meals: z.array(z.object({
+    date: z.string(),
+    entries: z.array(z.object({
+      mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snacks']),
+      mealTime: z.string(),
+      food: z.string(),
+      rating: z.number().min(1).max(10),
+      frequency: z.number().min(1),
+    })),
+  })),
+});
+
+// Define types for the form data and habits
+type MealEntry = {
+  mealType: string;
   mealTime: string;
   food: string;
   rating: number;
-  frequency : number;
-}
-const habits1 : Habit[]  =[
-  {
-    mealType: 'BreakFast',
-    mealTime : '2:11',
-    food : "Khaono",
-    rating : 1,
-    frequency:1,
-  },
-  {
-    mealType: 'BreakFast',
-    mealTime : '4:11',
-    food : "Khaono",
-    rating : 5,
-    frequency : 5,
-  },
-] 
+  frequency: number;
+};
 
+type Meal = {
+  date: string;
+  entries: MealEntry[];
+};
+
+type EatingHabit = {
+  _id: string;
+  userId: string;
+  meals: Meal[];
+  createdAt: string;
+  updatedAt: string;
+};
 
 const Home: React.FC = () => {
+  const { data: session } = useSession();
+  const userId = session?.user._id; 
+  const [habits, setHabits] = useState<EatingHabit[]>([]);
+  const { toast } = useToast();
+
+  
+  const form = useForm({
+    resolver: zodResolver(eatingHabitSchema),
+    defaultValues: {
+      meals: [
+        {
+          date: new Date().toISOString().split("T")[0],
+          entries: [
+            { mealType: "Breakfast", mealTime: "", food: "", rating: 1, frequency: 1 },
+            { mealType: "Lunch", mealTime: "", food: "", rating: 1, frequency: 1 },
+            { mealType: "Dinner", mealTime: "", food: "", rating: 1, frequency: 1 },
+            { mealType: "Snacks", mealTime: "", food: "", rating: 1, frequency: 1 },
+          ],
+        },
+      ],
+    },
+  });
+
+  useEffect(() => {
+    const fetchEatingHabits = async () => {
+      if (userId) {
+        try {
+          const response = await axios.get(`/api/getEatingHabit/?userId=${userId}`);
+          if (response.data.success) {
+            setHabits(response.data.data);
+          } else {
+            toast({ title: "Error fetching habits", description: response.data.message });
+          }
+        } catch (error) {
+          toast({ title: "Error", description: "Failed to fetch eating habits" });
+        }
+      }
+    };
+
+    fetchEatingHabits();
+  }, [userId, toast]);
+
+  const onSubmit = async (data: any) => {
+    try {
+      const response = await axios.post("/api/postEatingHabit/", {
+        userId,
+        meals: data.meals,
+      });
+
+      if (response.data.success) {
+        toast({ title: "Success", description: "Eating habits saved!" });
+        setHabits((prev) => [...prev, response.data.data]); // Ensure type consistency
+      } else {
+        toast({ title: "Error saving habits", description: response.data.message });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save eating habits" });
+    }
+  };
 
   return (
     <div className="container mx-auto py-10 px-6">
-      <div className='mb-6'><h2 className="text-3xl font-bold mb-6">Top Eating Habits</h2>
-      <HabitTable habits1={habits1} />
+      <h2 className="text-3xl font-bold mb-6">Your Eating Habits</h2>
+      <Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Date</TableHead>
+      <TableHead>Meal Type</TableHead>
+      <TableHead>Meal Time</TableHead>
+      <TableHead>Food</TableHead>
+      <TableHead>Rating</TableHead>
+      <TableHead>Frequency</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {habits.length > 0 ? (
+      habits.flatMap(habit =>
+        habit.meals.map((meal) =>
+          meal.entries.map((entry, index) => (
+            <TableRow key={index}>
+              <TableCell>{new Date(meal.date).toLocaleDateString()}</TableCell>
+              <TableCell>{entry.mealType}</TableCell>
+              <TableCell>{entry.mealTime}</TableCell>
+              <TableCell>{entry.food}</TableCell>
+              <TableCell>{entry.rating}</TableCell>
+              <TableCell>{entry.frequency}</TableCell>
+            </TableRow>
+          ))
+        )
+      )
+    ) : (
+      <TableRow>
+        <TableCell colSpan={6}>No data available</TableCell>
+      </TableRow>
+    )}
+  </TableBody>
+</Table>
+
+
+      <h2 className="text-3xl font-bold mb-6">Log Your Eating Habits</h2>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 px-8">
+  {form.watch("meals").map((meal, index) => (
+    <div key={index} className="mb-6">
+      <h3 className="text-xl mb-4 font-bold">Meal on {meal.date}</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {meal.entries.map((entry, entryIndex) => (
+          <React.Fragment key={entryIndex}>
+            <div>
+              <label className="font-semibold">Meal Type</label>
+              <Input {...form.register(`meals.${index}.entries.${entryIndex}.mealType`)} placeholder="Meal Type" />
+            </div>
+
+            <div>
+              <label className="font-semibold">Meal Time</label>
+              <Input type="time" {...form.register(`meals.${index}.entries.${entryIndex}.mealTime`)} />
+            </div>
+
+            <div>
+              <label className="font-semibold">Food</label>
+              <Input {...form.register(`meals.${index}.entries.${entryIndex}.food`)} placeholder="Food" />
+            </div>
+
+            <div>
+              <label className="font-semibold">Rating (1-10)</label>
+              <Input type="number" {...form.register(`meals.${index}.entries.${entryIndex}.rating`)} min={1} max={10} />
+            </div>
+
+            <div>
+              <label className="font-semibold">Frequency</label>
+              <Input type="number" {...form.register(`meals.${index}.entries.${entryIndex}.frequency`)} min={1} />
+            </div>
+          </React.Fragment>
+        ))}
       </div>
-      <h2 className="text-3xl font-bold mb-6">What are you eating right now?</h2>
-      <TrackerForm  />
+    </div>
+  ))}
+  <Button type="submit" className="w-full">Submit Eating Habits</Button>
+</form>
+
     </div>
   );
 };
 
 export default Home;
-

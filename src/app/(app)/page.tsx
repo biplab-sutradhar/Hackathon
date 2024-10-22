@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Bed, Gamepad, Heart, Utensils, User, LayoutDashboard, LogIn } from 'lucide-react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -280,6 +281,12 @@ const TestimonialsSection: React.FC = () => {
 };
 
 const page: React.FC = () => {
+const { data: session } = useSession();
+if (!session) {
+  return <div>You must be logged in</div>;
+}
+
+
   return (
     <div className="bg-white">
       <Navbar />
