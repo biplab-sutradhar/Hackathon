@@ -9,7 +9,7 @@ export const mentalHealthAssessmentSchema = z.object({
   sleepQuality: z.enum(['very good', 'good', 'average', 'poor']).optional(),
   appetiteChanges: z.enum(['no change', 'decreased', 'increased']).optional(),
   isFeelingSafe: z.boolean().optional(),
-  additionalNotes: z.string().optional(),
+  additionalNotes: z.string().optional()
 });
 
 export const mentalHealthTrackingSchema = z.object({
