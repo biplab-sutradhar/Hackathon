@@ -2,11 +2,11 @@
 import { z } from 'zod';
 
 const MealEntrySchema = z.object({
-    mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snacks']),
-    mealTime: z.string().min(1, { message: 'Meal Time is required' }),
-    food: z.string().min(1, { message: 'Food is required' }),
-    rating: z.number().min(1).max(10),
-    frequency: z.number().min(1),
+    mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snacks']).optional(),
+    mealTime: z.string().min(1, { message: 'Meal Time is required' }).optional(),
+    food: z.string().min(1, { message: 'Food is required' }).optional(),
+    rating: z.number().min(1).max(10).optional(),
+    frequency: z.number().min(1).optional(),
 });
 
 export const EatingHabitSchema = z.object({
@@ -15,8 +15,8 @@ export const EatingHabitSchema = z.object({
         z.object({
             date: z.string().refine((date) => !isNaN(Date.parse(date)), {
                 message: 'Invalid date format',
-            }),
-            entries: z.array(MealEntrySchema),
+            }).optional(),
+            entries: z.array(MealEntrySchema).optional(),
         })
     ),
 });

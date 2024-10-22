@@ -10,22 +10,20 @@ import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import axios from "axios";
-
-// Define the schema for eating habits
+ 
 const eatingHabitSchema = z.object({
   meals: z.array(z.object({
-    date: z.string(),
+    date: z.string().optional(),
     entries: z.array(z.object({
-      mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snacks']),
-      mealTime: z.string(),
-      food: z.string(),
-      rating: z.number().min(1).max(10),
-      frequency: z.number().min(1),
-    })),
+      mealType: z.enum(['Breakfast', 'Lunch', 'Dinner', 'Snacks']).optional(),
+      mealTime: z.string().optional(),
+      food: z.string().optional(),
+      rating: z.number().min(1).max(10).optional(),
+      frequency: z.number().min(1).optional(),
+    })).optional(),
   })),
 });
-
-// Define types for the form data and habits
+ 
 type MealEntry = {
   mealType: string;
   mealTime: string;
@@ -61,10 +59,10 @@ const Home: React.FC = () => {
         {
           date: new Date().toISOString().split("T")[0],
           entries: [
-            { mealType: "Breakfast", mealTime: "", food: "", rating: 1, frequency: 1 },
-            { mealType: "Lunch", mealTime: "", food: "", rating: 1, frequency: 1 },
-            { mealType: "Dinner", mealTime: "", food: "", rating: 1, frequency: 1 },
-            { mealType: "Snacks", mealTime: "", food: "", rating: 1, frequency: 1 },
+            { mealType: "Breakfast", mealTime: " 10:21", food: " rice", rating: 1, frequency: 1 },
+            { mealType: "Lunch", mealTime: " 09:21", food: " vegetables", rating: 1, frequency: 1 },
+            { mealType: "Dinner", mealTime: " 11:31", food: " eggs", rating: 1, frequency: 1 },
+            { mealType: "Snacks", mealTime: " 02:21", food: " bread", rating: 1, frequency: 1 },
           ],
         },
       ],
@@ -91,6 +89,8 @@ const Home: React.FC = () => {
   }, [userId, toast]);
 
   const onSubmit = async (data: any) => {
+    console.log("Form data:", data);
+    
     try {
       const response = await axios.post("/api/postEatingHabit/", {
         userId,
@@ -101,13 +101,18 @@ const Home: React.FC = () => {
         toast({ title: "Success", description: "Eating habits saved!" });
         setHabits((prev) => [...prev, response.data.data]); // Ensure type consistency
       } else {
-        toast({ title: "Error saving habits", description: response.data.message });
+        console.error("Error saving habits:", response.data);
+        toast({ title: "Error saving habits", description: response.data.message, variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "Error", description: "Failed to save eating habits" });
+      console.error("Error saving habits:", error);
+      toast({ title: "Error", description: "Failed to save eating habits", variant: "destructive" });
     }
   };
-
+  if (!session) {
+    return <div>You must be logged in</div>;
+  }
+  
   return (
     <div className="container mx-auto py-10 px-6">
       <h2 className="text-3xl font-bold mb-6">Your Eating Habits</h2>
@@ -152,7 +157,7 @@ const Home: React.FC = () => {
   {form.watch("meals").map((meal, index) => (
     <div key={index} className="mb-6">
       <h3 className="text-xl mb-4 font-bold">Meal on {meal.date}</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {meal.entries.map((entry, entryIndex) => (
           <React.Fragment key={entryIndex}>
             <div>

@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/libs/dbConnects';
 import EatingHabitModel from '@/model/EatingHabit';
-import { EatingHabitSchema } from '@/schemas/eatingHabitSchema';
 
 export async function POST(request: Request) {
   await dbConnect();
@@ -12,27 +11,10 @@ export async function POST(request: Request) {
 
     console.log("Received Body:", body);
 
-    // Validate the incoming data using Zod schema
-    const validation = EatingHabitSchema.safeParse(body);
-
-    if (!validation.success) {
-      const errors = validation.error.format();
-      console.error("Validation Errors:", errors); // Log detailed validation errors
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Validation errors',
-          errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    console.log("Validated Data:", validation.data);
-
+    // Directly create a new EatingHabit without validation
     const newEatingHabit = new EatingHabitModel({
-      userId: validation.data.userId,
-      meals: validation.data.meals,
+      userId: body.userId,
+      meals: body.meals,
     });
 
     // Save to the database

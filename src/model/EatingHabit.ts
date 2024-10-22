@@ -24,27 +24,27 @@ const MealEntrySchema = new Schema<MealEntry>(
         mealType: {
             type: String,
             enum: ['Breakfast', 'Lunch', 'Dinner', 'Snacks'],
-            required: true,
+            required: false,
         },
         mealTime: {
             type: String,
-            required: true,
+            required: false,
         },
         food: {
             type: String,
-            required: true,
+            required: false,
             trim: true,
             maxlength: 255,
         },
         rating: {
             type: Number,
-            required: true,
+            required: false,
             min: 1,
             max: 10,
         },
         frequency: {
             type: Number,
-            required: true,
+            required: false,
             min: 1,
         },
     },
