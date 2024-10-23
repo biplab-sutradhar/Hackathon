@@ -6,13 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useState, useEffect } from 'react'
+import axios from 'axios'
+import { MentalHealthTracking } from '@/model/mentalHealthTracking'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { toast, ToastContainer } from 'react-toastify'
+import { useSession } from 'next-auth/react'
 
-const emotions = [
-  "Happy",
-  "Sad",
-  "Angry",
-  "Neutral"
-];
+
+
 
 const res = {
   "assessments": [
@@ -27,93 +31,88 @@ const res = {
 }
 
 export default function EmotionTracker () {
+  const {data : session} = useSession();
   const [anxietyLevel, setAnxietyLevel] = useState(0);
   const [stressLevel, setStressLevel] = useState(0);
-  const [mood, setMood] = useState("");
-  const [logData, setLogData] = useState([{}]); // Holds fetched data for the last 7 days
+  const [mood, setMood] = useState(undefined);
+  const [logData, setLogData] = useState([{}]); 
   const [error, setError] = useState(null);
+  const [sleepQuality, setSleepQuality] = useState(undefined); 
+  const [socialInteraction, setSocialInteraction] = useState(undefined); 
+  const [isFeelingSafe, setIsFeelingSafe] = useState(true);
+  const [additionalNotes, setAdditionalNotes] = useState("");  
+  const emotions = ['Happy', 'Sad', 'Angry', 'Neutral'];
 
-  // Fetch mental health assessment data on page load
+
   useEffect(() => {
     const fetchData = async () => {
+      setLogData(res.assessments); // If the response is not OK, set log data
+      return;
       try {
-        const response = await fetch('/api/mental-health-tracking?last7Days=true'); // Fetch last 7 days data
-        if (!response.ok) {
-          setLogData(res.assessments);
+        const response = await axios.get('/api/mental-health-tracking', {
+          params: { last7Days: true } // Query parameter for the last 7 days
+        });
+  
+        if (response.status !== 200) {
+          console.log("error")
           return;
         }
-        const result = await response.json();
-        setLogData(result.assessments); // Store the array of assessments
+  
+        setLogData(response.data.assessments); // Store the array of assessments
       } catch (err) {
-        setError(err.message);
+        setError(err.message); // Set error if the request fails
       }
     };
+  
     fetchData();
   }, []);
-
-  // Function to handle post request whenever mood, anxiety, or stress changes
   const postMentalHealthData = async (updatedData) => {
     try {
-      const response = await axios.post('/api/postEatingHabit', updatedData, {
-        headers: { 'Content-Type': 'application/json' },
+      const response = await axios.post('/api/posthabit', updatedData, {
+        headers: { 'Content-Type': 'application/json' }
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to post data');
-      }
-
-      console.log('Data successfully posted');
+      toast.success("Data successfully sent")
+      console.log('Data successfully posted', response.data);
     } catch (err) {
-      console.error(err.message);
+      console.error('Failed to post data:', err.message);
     }
   };
-
+  const LogButtonHandler = () => {
+    const id = session?.user._id
+    console.log(session)
+    const updatedData : MentalHealthTracking = {
+      userId: id, 
+      assessments: [
+        {
+          date: new Date(), 
+          mood : mood.toLowerCase(), // Must be lowercase as per your schema
+          anxietyLevel,
+          stressLevel,
+          socialInteraction : socialInteraction?.toLowerCase(), // Must be lowercase
+          sleepQuality : sleepQuality?.toLowerCase(), // Must be lowercase
+          isFeelingSafe,
+          additionalNotes, // String as needed
+        }
+      ],
+      // createdAt: new Date(),
+      // updatedAt: new Date(),
+    }
+    
+    postMentalHealthData(updatedData);
+  };
   // Function to handle mood change
   const handleMoodChange = (newMood) => {
     setMood(newMood);
-    const updatedData = {
-      assessments: [
-        {
-          date: new Date(),
-          mood: newMood.toLowerCase(), 
-          anxietyLevel,
-          stressLevel,
-        },
-      ],
-    };
-    postMentalHealthData(updatedData);
   };
 
   // Function to handle anxiety level change
   const handleAnxietyChange = (value) => {
     setAnxietyLevel(value[0]);
-    const updatedData = {
-      assessments: [
-        {
-          date: new Date(),
-          mood,
-          anxietyLevel: value[0],
-          stressLevel,
-        },
-      ],
-    };
-    postMentalHealthData(updatedData);
   };
 
   // Function to handle stress level change
   const handleStressChange = (value) => {
     setStressLevel(value[0]);
-    const updatedData = {
-      assessments: [
-        {
-          date: new Date(),
-          mood,
-          anxietyLevel,
-          stressLevel: value[0],
-        },
-      ],
-    };
-    postMentalHealthData(updatedData);
   };
 
   if (error) return <div className="text-red-600">Error: {error}</div>;
@@ -156,16 +155,17 @@ export default function EmotionTracker () {
           {emotions.map((emotion, index) => (
             <Button
               key={index}
-              className='mx-2 bg-blue-500 text-white rounded-3xl p-4 hover:bg-blue-600'
+              className={`mx-2 rounded-3xl p-4 ${mood === emotion ? 'bg-blue-600 text-white' : 'bg-gray-400'} hover:bg-blue-600`}
               variant='default'
               onClick={() => handleMoodChange(emotion)}
             >
-              {emotion}
+             <h2  className={`${mood === emotion ? 'text-white' : 'text-black'}`}
+             > {emotion} </h2>
             </Button>
           ))}
         </div>
 
-        <h2 className='my-6 font-bold text-xl text-gray-800'>Select Anxiety Level</h2>
+        <h2 className='my-6 font-bold text-xl text-gray-800'> Anxiety Level</h2>
         <div className='w-full flex items-center '>
           <Slider
             value={[anxietyLevel]}
@@ -178,7 +178,7 @@ export default function EmotionTracker () {
           <span className='ml-4 text-lg'>{anxietyLevel}/10</span>
         </div>
 
-        <h2 className='my-6 font-bold text-xl text-gray-800'>Select Stress Level</h2>
+        <h2 className='my-6 font-bold text-xl text-gray-800'> Stress Level</h2>
         <div className='w-full flex items-center'>
           <Slider
             value={[stressLevel]}
@@ -190,7 +190,59 @@ export default function EmotionTracker () {
             
           />
           <span className='ml-4 text-lg'>{stressLevel}/10</span>
-        </div>       
+        </div>   
+        <h2 className='my-6 font-bold text-xl text-gray-800'>Select Sleep Quality</h2>
+        <Select  onValueChange={(value) => setSleepQuality(value)} value={sleepQuality}>
+          <SelectTrigger  className='shadow w-[280px]'>
+            <SelectValue placeholder="Select sleep quality" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="very good">Very Good</SelectItem>
+            <SelectItem value="good">Good</SelectItem>
+            <SelectItem value="average">Average</SelectItem>
+            <SelectItem value="poor">Poor</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Social Interaction Selector using Select from shadcn */}
+        <h2 className='my-6 font-bold text-xl text-gray-800'>Select Social Interaction</h2>
+        <div >
+        <Select onValueChange={(value) => setSocialInteraction(value)} value={socialInteraction} >
+          <SelectTrigger className='shadow w-[280px]'>
+            <SelectValue placeholder="Select social interaction" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="very social">Very Social</SelectItem>
+            <SelectItem value="neutral">Neutral</SelectItem>
+            <SelectItem value="withdrawn">Withdrawn</SelectItem>
+          </SelectContent>
+        </Select>
+        </div>
+        {/* Feeling Safe Toggle using Switch from shadcn */}
+        {/* <h2 className='my-6 font-bold text-xl text-gray-800'></h2>
+        <div className="flex items-center space-x-3 ">
+          <Label>Yes</Label>
+          <Switch checked={isFeelingSafe} onCheckedChange={setIsFeelingSafe} />
+          <Label>No</Label>
+        </div>  */}
+        <div className="flex flex-col my-4">
+        <h2 className='font-bold text-xl text-gray-800 my-2'>Additional Notes</h2>
+        <Textarea
+          rows={4} // Set the number of rows for the textarea
+          className="border rounded-md p-2 w-full" // Add styles as necessary
+          placeholder="Write your additional notes here..."
+          value={additionalNotes}
+          onChange={(e) => setAdditionalNotes(e.target.value)}
+        />
+    </div>
+    <div className='flex justify-center'>
+    <Button 
+          className="mt-4 bg-blue-600 w-[50%] text-white rounded-lg px-4 py-2" 
+          onClick={LogButtonHandler}
+        >
+         <h2 className='font-bold' >Log</h2> 
+        </Button>
+        </div>
       </div>
     </div>
   );

@@ -102,7 +102,7 @@ export default function Home() {
 				<div className="my-6">
 					<StressAnxietyBarChart data={data} />
 				</div>
-				<h2 className="font-extrabold text-xl py-4">Insights</h2>
+				{/* <h2 className="font-extrabold text-xl py-4">Insights</h2> */}
 			</div>
 		</div>
 	);

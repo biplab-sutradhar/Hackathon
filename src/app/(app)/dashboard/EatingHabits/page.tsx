@@ -109,9 +109,9 @@ const Home: React.FC = () => {
       toast({ title: "Error", description: "Failed to save eating habits", variant: "destructive" });
     }
   };
-  if (!session) {
-    return <div>You must be logged in</div>;
-  }
+  // if (!session) {
+  //   return <div>You must be logged in</div>;
+  // }
   
   return (
     <div className="container mx-auto py-10 px-6">

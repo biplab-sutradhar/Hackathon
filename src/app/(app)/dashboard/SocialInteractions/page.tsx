@@ -4,4 +4,3 @@ export default function SocialInteractions(){
   return (
 	<div>SocialInteractions</div>
   )
-}
