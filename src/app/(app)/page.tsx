@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Bed, Gamepad, Heart, Utensils, User, LayoutDashboard, LogIn } from 'lucide-react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -11,6 +12,9 @@ const fadeInUp = {
 };
 
 const Navbar: React.FC = () => {
+
+  const { data: session } = useSession();
+
   return (
     <motion.nav
       className="bg-white/90 backdrop-blur-md border-b border-gray-100 p-3 fixed w-full top-0 z-10"
@@ -59,7 +63,7 @@ const Navbar: React.FC = () => {
             aria-label="Sign In"
           >
             <LogIn className="w-4 h-4" />
-            <span>Sign In</span>
+           { session ? <span>Sign Out</span> : <span>Sign In</span>}
           </motion.a>
         </div>
       </div>
@@ -280,6 +284,12 @@ const TestimonialsSection: React.FC = () => {
 };
 
 const page: React.FC = () => {
+const { data: session } = useSession();
+if (!session) {
+  return <div>You must be logged in</div>;
+}
+
+
   return (
     <div className="bg-white">
       <Navbar />

@@ -66,7 +66,14 @@ const Page = () => {
         variant: "destructive",
       });
     } else if (result?.url) {
-      router.replace('/');
+      toast({
+        title: "Signin successful",
+        description: "Redirecting...",
+        variant: "default",
+      })
+      setTimeout(() => {
+        router.push('/');
+      }, 1500); 
     }
   };
 

@@ -1,42 +1,78 @@
-// models/EatingHabit.js
-import mongoose, { Schema, Document } from 'mongoose';
+// models/EatingHabit.ts
+import mongoose, { Schema, model, Document, Types } from 'mongoose';
 
 export interface MealEntry {
-  mealType: string;
-  mealTime: string;
-  food: string;
-  rating: number;
-  frequency: number;
-}
-
-export interface Meal {
-  date: Date;
-  entries: MealEntry[];
+    mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks';
+    mealTime: string;
+    food: string;
+    rating: number;
+    frequency: number;
 }
 
 export interface EatingHabit extends Document {
-  userId: string;
-  meals: Meal[];
+    userId: Types.ObjectId;
+    meals: {
+        date: Date;
+        entries: MealEntry[];
+    }[];
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
-const MealEntrySchema = new Schema<MealEntry>({
-  mealType: { type: String, required: true },
-  mealTime: { type: String, required: true },
-  food: { type: String, required: true },
-  rating: { type: Number, min: 1, max: 10, required: true },
-  frequency: { type: Number, required: true },
-});
+const MealEntrySchema = new Schema<MealEntry>(
+    {
+        mealType: {
+            type: String,
+            enum: ['Breakfast', 'Lunch', 'Dinner', 'Snacks'],
+            required: false,
+        },
+        mealTime: {
+            type: String,
+            required: false,
+        },
+        food: {
+            type: String,
+            required: false,
+            trim: true,
+            maxlength: 255,
+        },
+        rating: {
+            type: Number,
+            required: false,
+            min: 1,
+            max: 10,
+        },
+        frequency: {
+            type: Number,
+            required: false,
+            min: 1,
+        },
+    },
+    { _id: false }
+);
 
-const MealSchema = new Schema<Meal>({
-  date: { type: Date, required: true },
-  entries: { type: [MealEntrySchema], required: true },
-});
+const EatingHabitSchema = new Schema<EatingHabit>(
+    {
+        userId: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: 'User', 
+        },
+        meals: [
+            {
+                date: { type: Date, required: true },
+                entries: [MealEntrySchema],
+            },
+        ],
+    },
+    {
+        versionKey: false,
+        timestamps: true,
+    }
+);
 
-const EatingHabitSchema = new Schema<EatingHabit>({
-  userId: { type: String, required: true },
-  meals: { type: [MealSchema], required: true },  // Ensure 'meals' is an array of meals
-}, { timestamps: true });
+EatingHabitSchema.index({ userId: 1 }); 
 
-const EatingHabitModel = mongoose.models.EatingHabit || mongoose.model<EatingHabit>('EatingHabit', EatingHabitSchema);
+const EatingHabitModel = mongoose.models.EatingHabit || model<EatingHabit>('EatingHabit', EatingHabitSchema);
 
 export default EatingHabitModel;
