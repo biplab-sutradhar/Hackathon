@@ -26,6 +26,8 @@ const Navbar: React.FC = () => {
       <div className="container mx-auto flex justify-between items-center">
         <motion.div 
           className="text-2xl font-bold bg-gradient-to-r from-violet-300 via-purple-600 to-indigo-600 text-transparent bg-clip-text"
+          initial={{ x: -100 }}
+          animate={{ x: 0 }}
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400 }}
         >
@@ -119,7 +121,7 @@ const TopBanner: React.FC = () => {
           whileTap={{ scale: 0.95 }}
           transition={{ type: "spring", stiffness: 400 }}
         >
-          <Link href="/api/sign-up">Get Started</Link> 
+          <Link href="/sign-up">Get Started</Link> 
         </motion.button>
       </motion.div>
     </motion.div>
