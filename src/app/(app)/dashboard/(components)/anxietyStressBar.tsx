@@ -83,7 +83,7 @@ export function StressAnxietyBarChart({ data }: StressAnxietyBarChartProps) {
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="dashed" />}
+              content={<ChartTooltipContent indicator="dashed" className="bg-white" />}
             />
             <Bar dataKey="stressValue" fill="var(--color-stressValue)" radius={4} />
             <Bar dataKey="anxietyValue" fill="var(--color-anxietyValue)" radius={4} />

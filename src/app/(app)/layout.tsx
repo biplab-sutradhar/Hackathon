@@ -7,17 +7,15 @@ import { ToastProvider } from "@/components/ui/toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  // const [isClosed, setIsClosed] = useState(false);
+}>) { 
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={inter.className} style={{backgroundColor: "white"}}>
         <AuthProvider>
           {/* <Navbar /> */}
           {/* <Sidebar setIsClosed={setIsClosed} /> */}

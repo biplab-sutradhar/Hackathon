@@ -82,7 +82,7 @@ const Page = () => {
         description: response.data.message,
       });
       setTimeout(() => {
-      router.push("/");
+      router.push("/sign-in");
         
       }, 1500);
       setIsSubmitting(false);

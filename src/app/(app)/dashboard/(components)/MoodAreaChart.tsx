@@ -106,13 +106,13 @@ export function MoodAreaChart({ apiData }: MoodAreaChartProps) {
               tickFormatter={(value) => value.slice(0, 6)} 
             />
     
-            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line"  className="bg-white"/>} />
             <Area
               dataKey="mood"
               type="natural"
-              fill="var(--color-desktop)"
+              fill="var(--color-mood)"
               fillOpacity={0.4}
-              stroke="var(--color-desktop)"          
+              stroke="var(--color-mood)"          
             />
           </AreaChart>
         </ChartContainer>
